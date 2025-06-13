@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HindiLingo - Learn Hindi</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: #f0f4f8;
+      color: #333;
+    }
+
+    header {
+      background-color: #d35400;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #d35400;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .options button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      background-color: #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+
+    .options button:hover {
+      background-color: #fdebd0;
+    }
+
+    .result, .score {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .final-score {
+      font-size: 22px;
+      color: green;
+    }
+
+    .restart-btn {
+      background-color: #d35400;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin-top: 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .restart-btn:hover {
+      background-color: #a84300;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>HindiLingo</h1>
+    <p>Learn Hindi the fun way!</p>
+  </header>
+
+  <div class="container">
+    <h2>Translate to Hindi:</h2>
+    <div class="question" id="question">Loading...</div>
+
+    <div class="options">
+      <button onclick="checkAnswer(this)"></button>
+      <button onclick="checkAnswer(this)"></button>
+      <button onclick="checkAnswer(this)"></button>
+    </div>
+
+    <div class="result" id="result"></div>
+    <div class="score" id="score"></div>
+    <div class="final hidden" id="final">
+      <p class="final-score" id="final-score"></p>
+      <button class="restart-btn" onclick="restartQuiz()">Restart Quiz</button>
+    </div>
+  </div>
+
+  <script>
+    const quiz = [
+      { question: "Hello", answers: ["नमस्ते (Namaste)", "धन्यवाद (Dhanyavaad)", "कैसे हो? (Kaise ho?)"], correct: "नमस्ते (Namaste)" },
+      { question: "Thank you", answers: ["धन्यवाद (Dhanyavaad)", "नमस्ते (Namaste)", "फिर मिलेंगे (Phir milenge)"], correct: "धन्यवाद (Dhanyavaad)" },
+      { question: "How are you?", answers: ["मैं ठीक हूँ (Main theek hoon)", "कैसे हो? (Kaise ho?)", "अच्छा हूँ (Achha hoon)"], correct: "कैसे हो? (Kaise ho?)" },
+      { question: "What is your name?", answers: ["आपका नाम क्या है? (Aapka naam kya hai?)", "मेरा नाम अलेक्स है (Mera naam Alex hai)", "कैसा लग रहा है? (Kaisa lag raha hai?)"], correct: "आपका नाम क्या है? (Aapka naam kya hai?)" },
+      { question: "My name is Alex", answers: ["मेरा नाम अलेक्स है (Mera naam Alex hai)", "नमस्ते (Namaste)", "धन्यवाद (Dhanyavaad)"], correct: "मेरा नाम अलेक्स है (Mera naam Alex hai)" },
+      { question: "Good morning", answers: ["सुप्रभात (Suprabhaat)", "शुभ रात्रि (Shubh raatri)", "नमस्ते (Namaste)"], correct: "सुप्रभात (Suprabhaat)" },
+      { question: "Good night", answers: ["शुभ रात्रि (Shubh raatri)", "सुप्रभात (Suprabhaat)", "नमस्ते (Namaste)"], correct: "शुभ रात्रि (Shubh raatri)" },
+      { question: "Yes", answers: ["हाँ (Haan)", "नहीं (Nahin)", "शायद (Shayad)"], correct: "हाँ (Haan)" },
+      { question: "No", answers: ["नहीं (Nahin)", "हाँ (Haan)", "शायद (Shayad)"], correct: "नहीं (Nahin)" },
+      { question: "Please", answers: ["कृपया (Kripya)", "धन्यवाद (Dhanyavaad)", "नमस्ते (Namaste)"], correct: "कृपया (Kripya)" },
+      { question: "Excuse me", answers: ["माफ़ कीजिए (Maaf kijiye)", "कैसे हो? (Kaise ho?)", "आपका नाम क्या है? (Aapka naam kya hai?)"], correct: "माफ़ कीजिए (Maaf kijiye)" },
+      { question: "Sorry", answers: ["माफ़ कीजिए (Maaf kijiye)", "धन्यवाद (Dhanyavaad)", "नमस्ते (Namaste)"], correct: "माफ़ कीजिए (Maaf kijiye)" },
+      { question: "I don't understand", answers: ["मैं नहीं समझा (Main nahin samjha)", "माफ़ कीजिए (Maaf kijiye)", "धन्यवाद (Dhanyavaad)"], correct: "मैं नहीं समझा (Main nahin samjha)" },
+      { question: "Do you speak English?", answers: ["क्या आप अंग्रेज़ी बोलते हैं? (Kya aap angrezi bolte hain?)", "मैं नहीं समझा (Main nahin samjha)", "हाँ (Haan)"], correct: "क्या आप अंग्रेज़ी बोलते हैं? (Kya aap angrezi bolte hain?)" },
+      { question: "Where is the bathroom?", answers: ["बाथरूम कहाँ है? (Bathroom kahaan hai?)", "आपका नाम क्या है? (Aapka naam kya hai?)", "धन्यवाद (Dhanyavaad)"], correct: "बाथरूम कहाँ है? (Bathroom kahaan hai?)" },
+      { question: "I'm hungry", answers: ["मुझे भूख लगी है (Mujhe bhookh lagi hai)", "मैं थका हूँ (Main thaka hoon)", "मैं रो रहा हूँ (Main ro raha hoon)"], correct: "मुझे भूख लगी है (Mujhe bhookh lagi hai)" },
+      { question: "I'm tired", answers: ["मैं थका हूँ (Main thaka hoon)", "मुझे भूख लगी है (Mujhe bhookh lagi hai)", "मैं रो रहा हूँ (Main ro raha hoon)"], correct: "मैं थका हूँ (Main thaka hoon)" },
+      { question: "How much is this?", answers: ["ये कितने का है? (Ye kitne ka hai?)", "मैं नहीं समझा (Main nahin samjha)", "बाथरूम कहाँ है? (Bathroom kahaan hai?)"], correct: "ये कितने का है? (Ye kitne ka hai?)" },
+      { question: "See you again", answers: ["फिर मिलेंगे (Phir milenge)", "नमस्ते (Namaste)", "सुप्रभात (Suprabhaat)"], correct: "फिर मिलेंगे (Phir milenge)" },
+      { question: "Welcome", answers: ["स्वागत है (Swagat hai)", "धन्यवाद (Dhanyavaad)", "माफ़ कीजिए (Maaf kijiye)"], correct: "स्वागत है (Swagat hai)" }
+    ];
+
+    let current = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let shuffledAnswers = [];
+
+    function shuffle(array) {
+      return array.map(v => ({ v, s: Math.random() })).sort((a,b) => a.s - b.s).map(o => o.v);
+    }
+
+    function showQuestion() {
+      if (current >= quiz.length) {
+        document.querySelector(".options").classList.add("hidden");
+        document.getElementById("question").classList.add("hidden");
+        document.getElementById("result").classList.add("hidden");
+        document.getElementById("final").classList.remove("hidden");
+        document.getElementById("score").textContent = "";
+        document.getElementById("final-score").textContent =
+          `✅ Correct: ${correctCount} | ❌ Incorrect: ${wrongCount}\nOut of ${quiz.length} questions.`;
+        return;
+      }
+
+      const q = quiz[current];
+      document.getElementById("question").textContent = `${current + 1}. ${q.question}`;
+      shuffledAnswers = shuffle([...q.answers]);
+
+      const buttons = document.querySelectorAll(".options button");
+      buttons.forEach((btn, i) => {
+        btn.textContent = shuffledAnswers[i];
+        btn.style.backgroundColor = "#e0e0e0";
+        btn.disabled = false;
+      });
+
+      document.getElementById("result").textContent = "";
+      document.getElementById("score").textContent = `Question ${current + 1} of ${quiz.length}`;
+    }
+
+    function checkAnswer(btn) {
+      const isCorrect = btn.textContent === quiz[current].correct;
+      btn.style.backgroundColor = isCorrect ? "#c8e6c9" : "#ffcdd2";
+      document.getElementById("result").textContent = isCorrect
+        ? "✅ सही उत्तर!"
+        : `❌ गलत! सही उत्तर: ${quiz[current].correct}`;
+
+      if (isCorrect) correctCount++;
+      else wrongCount++;
+
+      const buttons = document.querySelectorAll(".options button");
+      buttons.forEach(b => b.disabled = true);
+
+      setTimeout(() => {
+        current++;
+        showQuestion();
+      }, 1500);
+    }
+
+    function restartQuiz() {
+      current = 0;
+      correctCount = 0;
+      wrongCount = 0;
+      document.querySelector(".options").classList.remove("hidden");
+      document.getElementById("question").classList.remove("hidden");
+      document.getElementById("result").classList.remove("hidden");
+      document.getElementById("final").classList.add("hidden");
+      showQuestion();
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
